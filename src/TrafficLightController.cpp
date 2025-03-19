@@ -8,10 +8,11 @@ static unsigned long stateStartTime = 0;
 
 const unsigned long MAIN_GREEN_DURATION_DEFAULT = 10000; // 10 sec.
 static unsigned long mainGreenDuration = MAIN_GREEN_DURATION_DEFAULT;
-const unsigned long MAIN_YELLOW_DURATION = 3000; // 3 sec.
-const unsigned long ALL_RED_DURATION = 2000;     // 2 sec.
-const unsigned long SIDE_GREEN_DURATION = 5000;  // 5 sec.
-const unsigned long SIDE_YELLOW_DURATION = 3000; // 3 sec.
+const unsigned long MAIN_YELLOW_DURATION = 3000;       // 3 sec.
+const unsigned long ALL_RED_DURATION = 2000;           // 2 sec.
+const unsigned long SIDE_GREEN_DURATION = 5000;        // 5 sec.
+const unsigned long SIDE_YELLOW_DURATION = 3000;       // 3 sec.
+const unsigned long PEDESTRIAN_GREEN_DURATION = 10000; // 10 sec
 
 // Flags to debounce button presses
 static bool pedestrianFlag = false;
@@ -67,6 +68,12 @@ static void setLights(TrafficLightState state)
         digitalWrite(LAMP3_YELLOW, LOW);
         digitalWrite(LAMP2_RED, LOW);
         break;
+    case PEDESTRIAN_GREEN:
+        digitalWrite(LAMP1_GREEN_PED, LOW);
+        digitalWrite(LAMP1_RED_PED, HIGH);
+        digitalWrite(LAMP2_GREEN_PED, LOW);
+        digitalWrite(LAMP2_RED_PED, HIGH);
+        break;
     }
 
     // Set lights for the new state
@@ -111,6 +118,16 @@ static void setLights(TrafficLightState state)
         digitalWrite(LAMP3_YELLOW, HIGH);
         digitalWrite(LAMP2_RED, HIGH);
         break;
+    case PEDESTRIAN_GREEN:
+        digitalWrite(LAMP1_GREEN_PED, HIGH);
+        digitalWrite(LAMP1_RED_PED, LOW);
+        digitalWrite(LAMP2_GREEN_PED, HIGH);
+        digitalWrite(LAMP2_RED_PED, LOW);
+
+        digitalWrite(LAMP1_RED, HIGH);
+        digitalWrite(LAMP2_RED, HIGH);
+        digitalWrite(LAMP3_RED, HIGH);
+        break;
     }
 
     previousState = state;
@@ -142,6 +159,9 @@ static void setLights(TrafficLightState state)
         break;
     case MAIN_RED_YELLOW:
         Serial.println("MAIN_RED_YELLOW");
+        break;
+    case PEDESTRIAN_GREEN:
+        Serial.println("PEDESTRIAN_GREEN");
         break;
     }
 }
@@ -182,7 +202,12 @@ void updateTrafficController()
 
     case ALL_RED_TO_SIDE:
         if (elapsedTime >= ALL_RED_DURATION)
-            changeState(SIDE_RED_YELLOW);
+        {
+            if (pedestrianFlag)
+                changeState(PEDESTRIAN_GREEN);
+            else
+                changeState(SIDE_RED_YELLOW);
+        }
         break;
 
     case SIDE_RED_YELLOW:
@@ -201,17 +226,35 @@ void updateTrafficController()
 
     case SIDE_YELLOW:
         if (elapsedTime >= SIDE_YELLOW_DURATION)
-            changeState(ALL_RED_TO_MAIN);
+        {
+            if (pedestrianFlag)
+                changeState(PEDESTRIAN_GREEN);
+            else
+                changeState(ALL_RED_TO_MAIN);
+        }
         break;
 
     case ALL_RED_TO_MAIN:
         if (elapsedTime >= ALL_RED_DURATION)
-            changeState(MAIN_RED_YELLOW);
+        {
+            if (pedestrianFlag)
+                changeState(PEDESTRIAN_GREEN);
+            else
+                changeState(MAIN_RED_YELLOW);
+        }
         break;
 
     case MAIN_RED_YELLOW:
         if (elapsedTime >= ALL_RED_DURATION)
             changeState(MAIN_GREEN);
+        break;
+
+    case PEDESTRIAN_GREEN:
+        if (elapsedTime >= PEDESTRIAN_GREEN_DURATION)
+        {
+            pedestrianFlag = false; // Reset pedestrian flag
+            changeState(currentState == ALL_RED_TO_SIDE ? SIDE_RED_YELLOW : MAIN_RED_YELLOW);
+        }
         break;
     }
 }

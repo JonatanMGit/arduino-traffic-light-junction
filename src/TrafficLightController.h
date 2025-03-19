@@ -13,7 +13,8 @@ enum TrafficLightState
     SIDE_GREEN,
     SIDE_YELLOW,
     ALL_RED_TO_MAIN,
-    MAIN_RED_YELLOW
+    MAIN_RED_YELLOW,
+    PEDESTRIAN_GREEN
 };
 
 // Initialize the controller state machine.
