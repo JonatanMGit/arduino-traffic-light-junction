@@ -8,11 +8,10 @@ enum TrafficLightState
 {
     MAIN_GREEN,
     MAIN_YELLOW,
-    ALL_RED_TO_SIDE,
+    ALL_RED,
     SIDE_RED_YELLOW,
     SIDE_GREEN,
     SIDE_YELLOW,
-    ALL_RED_TO_MAIN,
     MAIN_RED_YELLOW,
     PEDESTRIAN_GREEN
 };

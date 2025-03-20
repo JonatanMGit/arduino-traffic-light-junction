@@ -18,6 +18,10 @@ const unsigned long PEDESTRIAN_GREEN_DURATION = 10000; // 10 sec
 static bool pedestrianFlag = false;
 static bool vehicleFlag = false;
 
+// Variable to direct the traffic flow
+// true = main road, false = side road
+static bool directionIsMain = true;
+
 // --- Internal Functions ---
 
 // Update the lamps based on the current state.
@@ -39,8 +43,7 @@ static void setLights(TrafficLightState state)
         digitalWrite(LAMP3_YELLOW, LOW);
         digitalWrite(LAMP2_RED, LOW);
         break;
-    case ALL_RED_TO_SIDE:
-    case ALL_RED_TO_MAIN:
+    case ALL_RED:
         digitalWrite(LAMP1_RED, LOW);
         digitalWrite(LAMP2_RED, LOW);
         digitalWrite(LAMP3_RED, LOW);
@@ -89,8 +92,7 @@ static void setLights(TrafficLightState state)
         digitalWrite(LAMP3_YELLOW, HIGH);
         digitalWrite(LAMP2_RED, HIGH);
         break;
-    case ALL_RED_TO_SIDE:
-    case ALL_RED_TO_MAIN:
+    case ALL_RED:
         digitalWrite(LAMP1_RED, HIGH);
         digitalWrite(LAMP2_RED, HIGH);
         digitalWrite(LAMP3_RED, HIGH);
@@ -142,8 +144,8 @@ static void setLights(TrafficLightState state)
     case MAIN_YELLOW:
         Serial.println("MAIN_YELLOW");
         break;
-    case ALL_RED_TO_SIDE:
-        Serial.println("ALL_RED_TO_SIDE");
+    case ALL_RED:
+        Serial.println("ALL_RED");
         break;
     case SIDE_RED_YELLOW:
         Serial.println("SIDE_RED_YELLOW");
@@ -153,9 +155,6 @@ static void setLights(TrafficLightState state)
         break;
     case SIDE_YELLOW:
         Serial.println("SIDE_YELLOW");
-        break;
-    case ALL_RED_TO_MAIN:
-        Serial.println("ALL_RED_TO_MAIN");
         break;
     case MAIN_RED_YELLOW:
         Serial.println("MAIN_RED_YELLOW");
@@ -197,14 +196,17 @@ void updateTrafficController()
 
     case MAIN_YELLOW:
         if (elapsedTime >= MAIN_YELLOW_DURATION)
-            changeState(ALL_RED_TO_SIDE);
+            changeState(ALL_RED);
         break;
 
-    case ALL_RED_TO_SIDE:
+    case ALL_RED:
+        directionIsMain = !directionIsMain; // Toggle direction
         if (elapsedTime >= ALL_RED_DURATION)
         {
             if (pedestrianFlag)
                 changeState(PEDESTRIAN_GREEN);
+            else if (directionIsMain)
+                changeState(MAIN_RED_YELLOW);
             else
                 changeState(SIDE_RED_YELLOW);
         }
@@ -226,22 +228,7 @@ void updateTrafficController()
 
     case SIDE_YELLOW:
         if (elapsedTime >= SIDE_YELLOW_DURATION)
-        {
-            if (pedestrianFlag)
-                changeState(PEDESTRIAN_GREEN);
-            else
-                changeState(ALL_RED_TO_MAIN);
-        }
-        break;
-
-    case ALL_RED_TO_MAIN:
-        if (elapsedTime >= ALL_RED_DURATION)
-        {
-            if (pedestrianFlag)
-                changeState(PEDESTRIAN_GREEN);
-            else
-                changeState(MAIN_RED_YELLOW);
-        }
+            changeState(ALL_RED);
         break;
 
     case MAIN_RED_YELLOW:
@@ -253,7 +240,21 @@ void updateTrafficController()
         if (elapsedTime >= PEDESTRIAN_GREEN_DURATION)
         {
             pedestrianFlag = false; // Reset pedestrian flag
-            changeState(currentState == ALL_RED_TO_SIDE ? SIDE_RED_YELLOW : MAIN_RED_YELLOW);
+            changeState(ALL_RED);
+        }
+        else if (PEDESTRIAN_GREEN_DURATION - elapsedTime <= 3000)
+        {
+            // Blink pedestrian green light
+            if ((elapsedTime / 250) % 2 == 0) // Toggle every 250ms
+            {
+                digitalWrite(LAMP1_GREEN_PED, HIGH);
+                digitalWrite(LAMP2_GREEN_PED, HIGH);
+            }
+            else
+            {
+                digitalWrite(LAMP1_GREEN_PED, LOW);
+                digitalWrite(LAMP2_GREEN_PED, LOW);
+            }
         }
         break;
     }
