@@ -5,6 +5,7 @@
 #include "PinDefinitions.h"
 #include "TestLamps.h"
 #include "TrafficLightController.h"
+#include "WebServerHandler.h"
 
 WiFiServer server(80);
 
@@ -122,4 +123,7 @@ void loop()
 
   // Update the traffic light state machine
   updateTrafficController();
+
+  // Handle web requests
+  handleWebRequests();
 }

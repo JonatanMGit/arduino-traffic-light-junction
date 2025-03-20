@@ -26,4 +26,7 @@ void updateTrafficController();
 void handlePedestrianButton();
 void handleVehicleButton();
 
+// Function to set the traffic light state.
+void setTrafficLightState(const String &state);
+
 #endif // TRAFFIC_LIGHT_CONTROLLER_H

@@ -3,7 +3,7 @@
 #include "TestLamps.h"
 
 // --- State Variables and Timing Constants ---
-static TrafficLightState currentState = MAIN_GREEN;
+TrafficLightState currentState = MAIN_GREEN; // Make currentState accessible globally
 static unsigned long stateStartTime = 0;
 
 const unsigned long MAIN_GREEN_DURATION_DEFAULT = 10000; // 10 sec.
@@ -291,4 +291,24 @@ void handleVehicleButton()
         delay(100);
         digitalWrite(LAMP2_YELLOW, currentYellow);
     }
+}
+
+void setTrafficLightState(const String &state)
+{
+    if (state == "MAIN_GREEN")
+        changeState(MAIN_GREEN);
+    else if (state == "MAIN_YELLOW")
+        changeState(MAIN_YELLOW);
+    else if (state == "ALL_RED")
+        changeState(ALL_RED);
+    else if (state == "SIDE_RED_YELLOW")
+        changeState(SIDE_RED_YELLOW);
+    else if (state == "SIDE_GREEN")
+        changeState(SIDE_GREEN);
+    else if (state == "SIDE_YELLOW")
+        changeState(SIDE_YELLOW);
+    else if (state == "MAIN_RED_YELLOW")
+        changeState(MAIN_RED_YELLOW);
+    else if (state == "PEDESTRIAN_GREEN")
+        changeState(PEDESTRIAN_GREEN);
 }
