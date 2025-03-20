@@ -266,6 +266,14 @@ void handlePedestrianButton()
     {
         Serial.println("Pedestrian button pressed");
         pedestrianFlag = true;
+
+        // blink pedestrian green light
+        bool currentGreen = digitalRead(LAMP1_GREEN_PED);
+        digitalWrite(LAMP1_GREEN_PED, !currentGreen);
+        digitalWrite(LAMP2_GREEN_PED, !currentGreen);
+        delay(100);
+        digitalWrite(LAMP1_GREEN_PED, currentGreen);
+        digitalWrite(LAMP2_GREEN_PED, currentGreen);
     }
 }
 
@@ -276,5 +284,11 @@ void handleVehicleButton()
         Serial.println("Vehicle detection button pressed");
         vehicleFlag = true;
         mainGreenDuration = MAIN_GREEN_DURATION_DEFAULT / 2; // Reduce main green duration
+
+        // blink the yellow light of the side road
+        bool currentYellow = digitalRead(LAMP1_YELLOW);
+        digitalWrite(LAMP2_YELLOW, !currentYellow);
+        delay(100);
+        digitalWrite(LAMP2_YELLOW, currentYellow);
     }
 }
